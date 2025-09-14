@@ -53,12 +53,7 @@ export default function RecognitionPage(): JSX.Element {
   const webcamRef = useRef<any>(null);
 
   const fileInputRef = useRef<HTMLInputElement | null>(null);
-
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
-  const blazefaceModelRef = useRef<any | null>(null);
-
-  const [useClientDetect, setUseClientDetect] = useState<boolean>(true);
-  const [clientDetectBusy, setClientDetectBusy] = useState<boolean>(false);
 
   const handleFileSelected = (file?: File) => {
     if (!file) return;
@@ -72,12 +67,6 @@ export default function RecognitionPage(): JSX.Element {
       setImagePreview(dataUrl);
 
       setTimeout(() => drawImageToCanvas(dataUrl), 0);
-
-      if (useClientDetect) {
-        runClientDetect(dataUrl).catch((err) => {
-          console.warn("client detect failed", err);
-        });
-      }
     };
     reader.readAsDataURL(file);
 
@@ -120,7 +109,7 @@ export default function RecognitionPage(): JSX.Element {
     }
     const file = dataURLtoFile(imageSrc, `webcam-${Date.now()}.jpg`);
     handleFileSelected(file);
-  }, [useClientDetect]);
+  }, []);
 
   const handleRecognize = async () => {
     if (!selectedImage) {
@@ -141,8 +130,6 @@ export default function RecognitionPage(): JSX.Element {
         drawImageToCanvas(annotated);
       } else if ((res as any).boxes && Array.isArray((res as any).boxes) && imagePreview) {
         drawImageToCanvas(imagePreview, (res as any).boxes);
-      } else if (useClientDetect && imagePreview) {
-        await runClientDetect(imagePreview);
       }
     } catch (err: any) {
       const respData = err?.response?.data;
@@ -154,9 +141,6 @@ export default function RecognitionPage(): JSX.Element {
           method: respData?.method ?? "none",
         } as ExtendedRecognitionResult;
         setResult(friendly);
-        if (useClientDetect && imagePreview) {
-          await runClientDetect(imagePreview);
-        }
       } else {
         setError(err?.response?.data?.detail || "Recognition failed");
         setResult(null);
@@ -254,56 +238,6 @@ export default function RecognitionPage(): JSX.Element {
     });
   };
 
-  // ---------------- Client-side BlazeFace detection ----------------
-  const runClientDetect = async (imageDataUrl: string) => {
-    if (clientDetectBusy) return;
-    setClientDetectBusy(true);
-    try {
-      if (!blazefaceModelRef.current) {
-        await import("@tensorflow/tfjs-backend-webgl");
-        const blazeface = await import("@tensorflow-models/blazeface");
-        blazefaceModelRef.current = await blazeface.load();
-      }
-
-      const model = blazefaceModelRef.current;
-      if (!model) return;
-
-      const img = new Image();
-      img.crossOrigin = "anonymous";
-      img.src = imageDataUrl;
-
-      await new Promise<void>((res, rej) => {
-        img.onload = () => res();
-        img.onerror = () => rej();
-      }).catch(() => {
-        return;
-      });
-
-      const predictions: any[] = await model.estimateFaces(img, false);
-
-      const boxes = predictions.map((p) => {
-        const tl = p.topLeft as [number, number];
-        const br = p.bottomRight as [number, number];
-        const imgW = img.naturalWidth || img.width || 1;
-        const imgH = img.naturalHeight || img.height || 1;
-
-        const x = tl[0] / imgW;
-        const y = tl[1] / imgH;
-        const w = (br[0] - tl[0]) / imgW;
-        const h = (br[1] - tl[1]) / imgH;
-        const score = Array.isArray(p.probability) ? p.probability[0] : p.probability ?? 0;
-
-        return { x, y, width: w, height: h, recognized: false, score };
-      });
-
-      await drawImageToCanvas(imageDataUrl, boxes);
-    } catch (err) {
-      console.warn("BlazeFace detect error:", err);
-    } finally {
-      setClientDetectBusy(false);
-    }
-  };
-
   const getScoreColor = (score: number) => {
     if (score >= 0.8) return "bg-green-500";
     if (score >= 0.6) return "bg-yellow-500";
@@ -373,18 +307,6 @@ export default function RecognitionPage(): JSX.Element {
                   <p className="text-sm mt-1">Start webcam or upload an image</p>
                 </div>
               )}
-            </div>
-
-            <div className="mt-3 flex items-center justify-between">
-              <label className="text-sm text-gray-600 flex items-center gap-2">
-                <input
-                  type="checkbox"
-                  checked={useClientDetect}
-                  onChange={(e) => setUseClientDetect(e.target.checked)}
-                />
-                <span>Enable client-side face detection (BlazeFace)</span>
-              </label>
-              {clientDetectBusy && <div className="text-xs text-gray-500">Detecting faces…</div>}
             </div>
 
             <div className="mt-4 flex items-center gap-3">
