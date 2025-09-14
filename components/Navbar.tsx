@@ -1,14 +1,13 @@
 // components/Navbar.tsx
 "use client";
 
-import { Home, UserPlus, Camera, Video, User, ClipboardList, LogOut } from "lucide-react";
+import { Home, UserPlus, Camera, Video, User, ClipboardList, LogOut, LogIn } from "lucide-react";
 import Link from "next/link";
 import { useAuth } from "@/contexts/AuthContext";
 import { useRouter, usePathname } from "next/navigation";
-import { useEffect, useState } from "react";
 
 export default function Navbar() {
-  const { user, logout, isLoading, sessionReady } = useAuth(); // use context directly
+  const { user, logout, isLoading, sessionReady } = useAuth();
   const router = useRouter();
   const pathname = usePathname();
 
@@ -32,7 +31,7 @@ export default function Navbar() {
 
   return (
     <nav className="flex items-center justify-between px-6 py-3 border-b bg-white">
-      {/* Left */}
+      {/* Left logo */}
       <div className="flex items-center gap-2">
         <div className="bg-blue-600 text-white p-2 rounded-lg">
           <span className="font-bold">PVS</span>
@@ -65,7 +64,7 @@ export default function Navbar() {
         </Link>
       </div>
 
-      {/* Right: user area */}
+      {/* Right user area */}
       <div className="flex items-center gap-3">
         {!sessionReady ? (
           <span className="text-sm text-gray-500">Loading...</span>
@@ -86,10 +85,14 @@ export default function Navbar() {
             </button>
           </>
         ) : (
-          <span className="text-sm text-gray-500">Not logged in</span>
+          <Link
+            href="/login"
+            className="flex items-center gap-1 text-sm text-blue-600 hover:text-blue-800"
+          >
+            <LogIn size={16} /> Login
+          </Link>
         )}
       </div>
     </nav>
   );
 }
-
