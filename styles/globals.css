@@ -1,0 +1,61 @@
+/* -------------------------------------------------------------------------- */
+/* 1) Tailwind base/components/utilities                                    */
+/* -------------------------------------------------------------------------- */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* -------------------------------------------------------------------------- */
+/* 2) Import Geist Sans & Geist Mono                                          */
+/* -------------------------------------------------------------------------- */
+/* Make sure the family names here match what you reference below */
+@import url('https://fonts.googleapis.com/css2?family=Geist+Sans:wght@400;700&family=Geist+Mono&display=swap');
+
+/* -------------------------------------------------------------------------- */
+/* 3) CSS Custom Properties & Base Styles                                   */
+/* -------------------------------------------------------------------------- */
+:root {
+  /* colors & radii */
+  --background: 0 0% 100%;
+  --foreground: 0 0% 3.9%;
+  /* … all your other custom props … */
+  --sidebar-ring: 217.2 91.2% 59.8%;
+}
+
+.dark {
+  /* dark‑mode overrides */
+  --background: 0 0% 3.9%;
+  --foreground: 0 0% 98%;
+  /* … etc … */
+  --sidebar-ring: 217.2 91.2% 59.8%;
+}
+
+/* -------------------------------------------------------------------------- */
+/* 4) Global Font Family                                                      */
+/* -------------------------------------------------------------------------- */
+html {
+  font-family: 'Geist Sans', sans-serif;
+  --font-sans: 'Geist Sans';
+  --font-mono: 'Geist Mono';
+}
+
+/* -------------------------------------------------------------------------- */
+/* 5) Utility Classes Layer                                                   */
+/* -------------------------------------------------------------------------- */
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+}
+
+/* -------------------------------------------------------------------------- */
+/* 6) Global Element Styles                                                   */
+/* -------------------------------------------------------------------------- */
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+}
