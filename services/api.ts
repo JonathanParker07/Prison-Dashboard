@@ -12,11 +12,14 @@ import type {
 } from "@/types";
 
 // ===================== BASE URLS =====================
+// ✅ Use environment variable first, fallback to Render backend in production
 export const API_BASE_URL =
-  process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8000";
+  process.env.NEXT_PUBLIC_API_BASE_URL ||
+  "https://prison-backend-rd0k.onrender.com";
 
 export const WS_BASE_URL =
-  process.env.NEXT_PUBLIC_WS_BASE_URL || "ws://localhost:8000";
+  process.env.NEXT_PUBLIC_WS_BASE_URL ||
+  "wss://prison-backend-rd0k.onrender.com";
 
 // ===================== AXIOS INSTANCE =====================
 const api = axios.create({ baseURL: API_BASE_URL });
